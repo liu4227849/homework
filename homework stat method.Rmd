@@ -1,0 +1,127 @@
+---
+title: "homework of stat method"
+author: "xiang liu"
+date: "2014/10/28"
+output:
+  html_document:
+    theme: cerulean
+  pdf_document:
+    fig_height: 3
+    fig_width: 4
+    toc_depth: 6
+---
+
+- **Question 1**
+
+```{r, echo=TRUE, comment=NA, message=FALSE}
+patience=read.table("patience.dat",header=TRUE, col.names=c("satisfaction", "age", "severity", "anxiety"))
+library(psych)
+describe(patience)
+
+hist(patience$satisfaction, right=FALSE, main="patient's satisfaction", xlab="satisfaction")
+cat(sprintf("patients give a satisfaction score at %g on average. the max. score is %g and the min score is %g. the standard error of the sampling distribution is %f", describe(patience)$mean[1],describe(patience)$max[1],describe(patience)$min[1],describe(patience)$se[1]), ", the distribution is lightly left skewd")
+
+hist(patience$age, right=FALSE, main="patient's age", xlab="age")
+cat(sprintf("patients have an average age of %g year-old. the max. age is %g and the min age is %g. the standard error of the sampling distribution is %f", describe(patience)$mean[2],describe(patience)$max[2],describe(patience)$min[2],describe(patience)$se[2]), ", the distribution doens't look like normal but is evenly distributed")
+
+hist(patience$severity, right=FALSE, main="severity of illness", xlab="severity")
+cat(sprintf("the mean index of severity of illness is %g. the max. value is %g and the min. value is %g. the standard error of the sampling distribution is %f", describe(patience)$mean[3],describe(patience)$max[3],describe(patience)$min[3],describe(patience)$se[3]), ", the distribution does look normal with slightly right skewness")
+
+hist(patience$anxiety, right=FALSE, main="patient's anxiety", xlab="anxiety")
+cat(sprintf("patients' average anxiety score is %g. the max. value is %g and the min. value is %g. the standard error of the sampling distribution is %f", describe(patience)$mean[4],describe(patience)$max[4],describe(patience)$min[4],describe(patience)$se[4]), ", the distribution does look normal but with no value sampled within anxiety score of 2.6 and 2.8")
+```
+
+- **Question 2**
+
+```{r, echo=TRUE, comment=NA, message=FALSE}
+pairs(~satisfaction+age+severity+anxiety, data=patience, main="Scatterplot Matrix")
+cat("Correlation Matrix")
+as.matrix(cor(patience))
+```
+- *Comment*: From the scatterplot matrix, we see strong negative association between satisfaction (Y) and age (x1), relatively strong negative relationship between satisfaction and severity (x2), satisfaction and anxiety (x3). the correlation matrix supports these observations
+- Furthermore, there is strong colinear relationship between severity and anxiety. and from correlation matrix, the predictors don't seem to be independent from each other. 
+
+- **Question 3**
+
+```{r, echo=TRUE, comment=NA, message=FALSE}
+patience.lm=lm(satisfaction~age+severity+anxiety,data=patience)
+summary(patience.lm)
+```
+- The regression function is:
+$$\hat {y_i} = 162.88 - 1.21 {x_1}_i - 0.67 {x_2}_i -8.21 {x_3}_i + \epsilon_i$$
+- b2 = -0.67, means the decrese of a patient's satisfaction score is 0.67
+unit on average for each unit increase of illness severity when age and anxiety are fixed.
+
+- **Question 4**
+- From the regression output, the coefficient of multiple determination, namely $R^2$, is 67.27%. 
+
+- **Question 5**
+- From the regression output, the adjusted coefficient of multiple determination, namely ${R_a}^2$, is 62.1%. 
+- We verify the relationship by examing the function: $1-(1-R^2)(n-1)/(n-p)$. Here the n is the sample size 23, and the p is the number of estimated parameter here 4. 
+- The result is 0.6210211 which matches the value of the adjusted coefficient of multiple determination
+
+- **Question 6**
+- Hypothesis: $H_0: \: \beta_1 = 0 \: vs.\: H_a: \: \beta_1 \neq 0$
+- Decision rule: p-value=0.00074  < 0.05, we reject $H_0$.
+- Conclusion: We have sufficient evidence to conclude that the predictor
+of age is significant in predicting patient's satisfaction in our model.
+
+- **Question 7**
+- Hypothesis: $H_0: \: \beta_1 = \beta_2 = \beta_3 = 0$ vs. $H_a$: at least two $\beta_i$'s are not equal.
+- Decision rule: from the output we observe the p-value= 7.482e-05 < 0.05, reject $H_0$.
+- Conclusion: We have sufficient evidence to conclude that our linear
+model is appropriate. It also implied at least one of these three predictor variables is significant in explaining the response variable.
+
+- **Question 7**
+
+```{r, echo=TRUE, comment=NA, message=FALSE}
+patience.res=resid(patience.lm)
+plot(fitted(patience.lm), patience.res, ylab="Residuals", xlab="Satisfaction", main="residual against fitted value") 
+abline(0, 0)     
+```
+
+- *Comment*: The residuals "bounce randomly" around the 0 line. This suggests that the assumption that the relationship is linear is reasonable. The residuals roughly form a "horizontal band" around the 0 line. This suggests that the variances of the error terms are equal. Overall, it's a good fit and verifies that we can use regression model to represent the data.
+
+```{r, echo=TRUE, comment=NA, message=FALSE}
+patience.res=resid(patience.lm)
+plot(patience$age, patience.res, ylab="Residuals", xlab="Age", main="residual against age") 
+abline(0, 0)     
+```
+
+- *Comment*: The residuals "bounce randomly" around the 0 line. This suggests that the assumption that the relationship is linear is reasonable. The residuals roughly form a "horizontal band" around the 0 line. This suggests that the variances of the error terms are equal. Though the residuals keep to be centered around 5 when the age is below 30.
+
+```{r, echo=TRUE, comment=NA, message=FALSE}
+patience.res=resid(patience.lm)
+plot(patience$severity, patience.res, ylab="Residuals", xlab="Severity", main="residual against illness of severity") 
+abline(0, 0)     
+```
+
+- *Comment*: The residuals "bounce randomly" around the 0 line. This suggests that the assumption that the relationship is linear is reasonable. The residuals roughly form a "horizontal band" around the 0 line. This suggests that the variances of the error terms are equal, though variance tends to be smaller on its two side.
+
+```{r, echo=TRUE, comment=NA, message=FALSE}
+patience.res=resid(patience.lm)
+plot(patience$anxiety, patience.res, ylab="Residuals", xlab="Anxiety", main="residual against anxiety") 
+abline(0, 0)     
+```
+
+- *Comment*: The residuals "bounce randomly" around the 0 line. This suggests that the assumption that the relationship is linear is reasonable. The variance isn't keeping constant as it's getting smaller when approaching to its two side. 
+
+```{r, echo=TRUE, comment=NA, message=FALSE}
+patience.stdres=rstandard(patience.lm)
+qqnorm(patience.stdres, ylab="Standardized Residuals", xlab="Normal Scores", main="Normal Probability Plot") 
+qqline(patience.stdres,col="red")
+```
+
+- *Comment*: The figure has flattening at the extremes for the curves.
+ This indicates that the underlying distribution has a thin tail. thus it may not conform to a normal distribution.
+ 
+- **Question 8**
+No, we cannot conduct a formal test for lack of fit here. Because to conduct the lack of fit test, at least we need have replicated observations at each predictors level. And none of these predictors meets the requirement. 
+
+- **Question 9**
+
+```{r, echo=TRUE, comment=NA, message=FALSE}
+confint(object = patience.lm,parm = c("age","severity","anxiety"),level = 1-.05/3)
+```
+
+- *Comment*: we are 95% confident that the parameter of age is between -2 and -0.42, the parameter of severity is between -2.82 and 1.49, the parameter of anxiety is between -40.75 and 23.52 in our regression model. 
